@@ -25,6 +25,8 @@ const turndownService = new TurndownService({
  * @returns markdown of page
  */
 export function parsePage(pageHtml: string): string {
+  console.debug("Parsing page");
+
   const doc = new DOMParser().parseFromString(pageHtml, "text/html");
 
   const posts = doc.querySelectorAll(POST_SELECTOR);
@@ -52,6 +54,8 @@ export function parsePage(pageHtml: string): string {
 
     const count = anchorElement.textContent.trim();
     const url = anchorElement.getAttribute("href");
+
+    console.debug(`Parsing post ${count} by ${author}`);
 
     const dateElement = post.querySelector(DATETIME_SELECTOR);
 

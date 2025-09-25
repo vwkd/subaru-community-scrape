@@ -7,6 +7,8 @@ if (Deno.args.length !== 2) {
 
 const [threadUrl, outputDir] = Deno.args;
 
+console.info(`Scraping thread ${threadUrl} to directory ${outputDir}`);
+
 let markdown = "";
 let lastPageHtml: string | undefined = undefined;
 

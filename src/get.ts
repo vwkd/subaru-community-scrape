@@ -19,6 +19,8 @@ export async function getPage(
   threadUrl: string,
   pageNumber: number,
 ): Promise<string> {
+  console.debug(`Fetching page ${pageNumber}`);
+
   const url = join(threadUrl, `index${pageNumber}.html`);
 
   const res = await fetch(url, {
