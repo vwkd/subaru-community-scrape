@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "run": "deno run -RWNE --env-file=.env src/main.ts"
+  },
+  "imports": {
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.56",
+    "@std/path": "jsr:@std/path@^1.1.2",
+    "turndown": "npm:turndown@^7.2.1"
+  }
+}
