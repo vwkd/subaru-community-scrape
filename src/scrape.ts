@@ -5,6 +5,8 @@ import type { Options } from "./types.ts";
 /**
  * Scrape thread from Subaru Community forum
  *
+ * - fetch thread from URL, parse to markdown and write to file in output directory
+ *
  * @param options Options
  */
 export async function scrape(options: Options) {
@@ -13,9 +15,10 @@ export async function scrape(options: Options) {
   console.info(`Scraping thread ${url} to directory ${out}`);
 
   let markdown = "";
-  let lastPageMarkdown: string | undefined = undefined;
 
   const sessionId = await createSession();
+
+  let lastPageMarkdown: string | undefined = undefined;
 
   for (let pageNumber = 1;; pageNumber += 1) {
     const pageHtml = await getPage(sessionId, url, pageNumber);
@@ -26,9 +29,9 @@ export async function scrape(options: Options) {
       break;
     }
 
-    lastPageMarkdown = pageMarkdown;
-
     markdown += pageMarkdown;
+
+    lastPageMarkdown = pageMarkdown;
   }
 
   await destroySession(sessionId);
