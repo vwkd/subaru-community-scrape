@@ -1,5 +1,18 @@
+import { delay } from "@std/async";
 import { getPage } from "./get.ts";
 import { parsePage } from "./parse.ts";
+
+const DELAY_MS_STR = Deno.env.get("DELAY_MS");
+
+if (!DELAY_MS_STR) {
+  throw new Error("DELAY_MS environment variable is not set");
+}
+
+const DELAY_MS = Number.parseInt(DELAY_MS_STR, 10);
+
+if (Number.isNaN(DELAY_MS) || DELAY_MS < 0) {
+  throw new Error("DELAY_MS environment variable must be non-negative integer");
+}
 
 if (Deno.args.length !== 2) {
   throw new Error("Unexpected number of arguments");
@@ -11,8 +24,12 @@ console.info(`Scraping thread ${threadUrl} to directory ${outputDir}`);
 
 let markdown = "";
 let lastPageHtml: string | undefined = undefined;
+let delayPromise = Promise.resolve();
 
 for (let pageNumber = 1;; pageNumber += 1) {
+  await delayPromise;
+  delayPromise = delay(DELAY_MS);
+
   const pageHtml = await getPage(threadUrl, pageNumber);
 
   if (lastPageHtml === pageHtml) {
