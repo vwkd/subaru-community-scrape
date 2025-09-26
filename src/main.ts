@@ -23,7 +23,7 @@ const [threadUrl, outputDir] = Deno.args;
 console.info(`Scraping thread ${threadUrl} to directory ${outputDir}`);
 
 let markdown = "";
-let lastPageHtml: string | undefined = undefined;
+let lastPageMarkdown: string | undefined = undefined;
 let delayPromise = Promise.resolve();
 
 const sessionId = await createSession();
@@ -34,13 +34,13 @@ for (let pageNumber = 1;; pageNumber += 1) {
 
   const pageHtml = await getPage(sessionId, threadUrl, pageNumber);
 
-  if (lastPageHtml === pageHtml) {
+  const pageMarkdown = parsePage(pageHtml);
+
+  if (lastPageMarkdown === pageMarkdown) {
     break;
   }
 
-  lastPageHtml = pageHtml;
-
-  const pageMarkdown = parsePage(pageHtml);
+  lastPageMarkdown = pageMarkdown;
 
   markdown += pageMarkdown;
 }
