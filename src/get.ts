@@ -1,12 +1,28 @@
+import { delay } from "@std/async";
 import { join } from "@std/path/join";
 
 const FLARESOLVERR_URL = "http://localhost:8191/v1";
 const HEADERS = { "Content-Type": "application/json" };
 
+const DELAY_MS_STR = Deno.env.get("DELAY_MS");
+
+if (!DELAY_MS_STR) {
+  throw new Error("DELAY_MS environment variable is not set");
+}
+
+const DELAY_MS = Number.parseInt(DELAY_MS_STR, 10);
+
+if (Number.isNaN(DELAY_MS) || DELAY_MS < 0) {
+  throw new Error("DELAY_MS environment variable must be non-negative integer");
+}
+
+let delayPromise = Promise.resolve();
+
 /**
  * Fetch page of thread in Subaru Community forum
  *
  * - uses FlareSolverr to bypass Cloudflare
+ * - throttles requests to one every `DELAY_MS` milliseconds
  * - note: returns last page for non-existent page, check manually if is equal to previous page to know when to stop!
  *
  * @param sessionId FlareSolverr session ID
@@ -20,6 +36,9 @@ export async function getPage(
   pageNumber: number,
 ): Promise<string> {
   console.debug(`Fetching page ${pageNumber}`);
+
+  await delayPromise;
+  delayPromise = delay(DELAY_MS);
 
   const url = join(threadUrl, `index${pageNumber}.html`);
 
