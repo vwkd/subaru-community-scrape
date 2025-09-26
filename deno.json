@@ -4,6 +4,7 @@
   },
   "imports": {
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.56",
+    "@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.8",
     "@std/async": "jsr:@std/async@^1.0.14",
     "@std/path": "jsr:@std/path@^1.1.2",
     "turndown": "npm:turndown@^7.2.1"

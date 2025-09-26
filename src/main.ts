@@ -1,6 +1,8 @@
 import { delay } from "@std/async";
+import { Command } from "@cliffy/command";
 import { createSession, destroySession, getPage } from "./get.ts";
 import { parsePage } from "./parse.ts";
+import type { Options } from "./types.ts";
 
 const DELAY_MS_STR = Deno.env.get("DELAY_MS");
 
@@ -14,41 +16,54 @@ if (Number.isNaN(DELAY_MS) || DELAY_MS < 0) {
   throw new Error("DELAY_MS environment variable must be non-negative integer");
 }
 
-if (Deno.args.length !== 2) {
-  throw new Error("Unexpected number of arguments");
-}
+await new Command()
+  .name("subaru-community-scrape")
+  .version("0.0.1")
+  .description("Scrape thread from Subaru Community forum")
+  .option("-u, --url <url:string>", "Thread URL", { required: true })
+  .option("-o, --out <path:file>", "Output directory", { required: true })
+  .action(main)
+  .parse(Deno.args);
 
-const [threadUrl, outputDir] = Deno.args;
+/**
+ * Scrape thread from Subaru Community forum
+ *
+ * @param options Options
+ */
+export async function main(options: Options) {
+  const { url, out } = options;
 
-console.info(`Scraping thread ${threadUrl} to directory ${outputDir}`);
+  console.info(`Scraping thread ${url} to directory ${out}`);
 
-let markdown = "";
-let lastPageMarkdown: string | undefined = undefined;
-let delayPromise = Promise.resolve();
+  let markdown = "";
+  let lastPageMarkdown: string | undefined = undefined;
+  let delayPromise = Promise.resolve();
 
-const sessionId = await createSession();
+  const sessionId = await createSession();
 
-for (let pageNumber = 1;; pageNumber += 1) {
-  await delayPromise;
-  delayPromise = delay(DELAY_MS);
+  for (let pageNumber = 1;; pageNumber += 1) {
+    await delayPromise;
+    delayPromise = delay(DELAY_MS);
 
-  const pageHtml = await getPage(sessionId, threadUrl, pageNumber);
+    const pageHtml = await getPage(sessionId, url, pageNumber);
 
-  const pageMarkdown = parsePage(pageHtml);
+    const pageMarkdown = parsePage(pageHtml);
 
-  if (lastPageMarkdown === pageMarkdown) {
-    break;
+    if (lastPageMarkdown === pageMarkdown) {
+      break;
+    }
+
+    lastPageMarkdown = pageMarkdown;
+
+    markdown += pageMarkdown;
   }
 
-  lastPageMarkdown = pageMarkdown;
+  await destroySession(sessionId);
 
-  markdown += pageMarkdown;
+  const threadName = new URL(url).pathname.split("/").filter(Boolean)
+    .pop();
+  const outputPath = `${out}/${threadName}.md`;
+
+  await Deno.mkdir(out, { recursive: true });
+  await Deno.writeTextFile(outputPath, markdown);
 }
-
-await destroySession(sessionId);
-
-const threadName = new URL(threadUrl).pathname.split("/").filter(Boolean).pop();
-const outputPath = `${outputDir}/${threadName}.md`;
-
-await Deno.mkdir(outputDir, { recursive: true });
-await Deno.writeTextFile(outputPath, markdown);
