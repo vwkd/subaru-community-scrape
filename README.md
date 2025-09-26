@@ -7,6 +7,7 @@ Scrape thread from Subaru Community forum
 ## Requirements
 
 - Deno
+- [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)
 
 
 

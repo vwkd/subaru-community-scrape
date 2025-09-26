@@ -1,5 +1,5 @@
 import { delay } from "@std/async";
-import { getPage } from "./get.ts";
+import { createSession, destroySession, getPage } from "./get.ts";
 import { parsePage } from "./parse.ts";
 
 const DELAY_MS_STR = Deno.env.get("DELAY_MS");
@@ -26,11 +26,13 @@ let markdown = "";
 let lastPageHtml: string | undefined = undefined;
 let delayPromise = Promise.resolve();
 
+const sessionId = await createSession();
+
 for (let pageNumber = 1;; pageNumber += 1) {
   await delayPromise;
   delayPromise = delay(DELAY_MS);
 
-  const pageHtml = await getPage(threadUrl, pageNumber);
+  const pageHtml = await getPage(sessionId, threadUrl, pageNumber);
 
   if (lastPageHtml === pageHtml) {
     break;
@@ -42,6 +44,8 @@ for (let pageNumber = 1;; pageNumber += 1) {
 
   markdown += pageMarkdown;
 }
+
+await destroySession(sessionId);
 
 const threadName = new URL(threadUrl).pathname.split("/").filter(Boolean).pop();
 const outputPath = `${outputDir}/${threadName}.md`;
